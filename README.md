@@ -1,21 +1,51 @@
 # User Management System (Express + TypeScript + MVC)
 
-A full-stack User Management web application built with **Node.js**, **Express**, **TypeScript**, and an **MVC (Model-View-Controller)** architecture. It features a complete RESTful API and an interactive frontend with live search, region filtering, and modal dialogs for CRUD operations.
+A full-stack User Management application built with **Node.js**, **Express**, **TypeScript**, and the **MVC (Model-View-Controller)** pattern.
+
+> 🎯 **Project Purpose**:  
+> This project was developed as a hands-on learning lab to practice and master core backend development concepts with **Node.js & Express**, implement clean architecture (**MVC** and **RESTful API design**), and prepare for integrating relational databases with **PostgreSQL** and **Prisma ORM**.
 
 ---
 
-## 🚀 Features
+## 🚀 Current Features
 
-- **Architecture**: Clean MVC (Model-View-Controller) pattern with strict TypeScript typings.
+- **MVC Architecture**: Clean separation of concerns between Models, Controllers, and Routes.
 - **RESTful API**: Standardized HTTP endpoints for user CRUD operations (`GET`, `POST`, `PUT`, `DELETE`).
 - **Live Search & Filter**:
   - Real-time debounced search by name, email, or region.
   - Region-based filtering.
-  - Result count indicators.
+  - Dynamic result counter.
 - **Interactive Web Client**:
   - **Two-Tab Interface**: Tab to register a new user and Tab to explore all registered users.
-  - **CRUD Operations via Modals**: Native HTML5 `<dialog>` modals for editing user details and confirming deletion.
+  - **CRUD Modals**: Native HTML5 `<dialog>` modals for updating user details and confirming deletion.
   - **Responsive UI**: Built with modern CSS (Inter typography, CSS grid, micro-animations, and alert feedback).
+
+---
+
+## 🗺️ Roadmap (In Progress & Upcoming)
+
+- [x] **Node.js & Express Fundamentals**: Server setup, middlewares, routing, and static file serving.
+- [x] **TypeScript Integration**: Strong typing across models, controllers, and routes.
+- [x] **MVC Pattern Refactoring**: Decoupling business logic from routing.
+- [x] **Interactive Frontend**: Tabbed navigation, live search, and modal interactions.
+- [ ] **Database Integration with PostgreSQL**: Replacing in-memory mock storage with a persistent PostgreSQL database.
+- [ ] **Prisma ORM**: Schema definitions, database migrations, and type-safe database queries.
+- [ ] **Validation & Error Handling**: Adding schema validation (e.g. Zod or Joi) and centralized error handling middleware.
+
+---
+
+## 🛠️ Tech Stack
+
+### Current
+- **Runtime**: [Node.js](https://nodejs.org/)
+- **Framework**: [Express.js](https://expressjs.com/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Dev Runner**: [tsx](https://github.com/privatenumber/tsx) (Fast TypeScript execution with watch mode)
+- **HTTP Client**: [Axios](https://axios-http.com/)
+
+### Planned / In Roadmap
+- **Database**: [PostgreSQL](https://www.postgresql.org/)
+- **ORM**: [Prisma](https://www.prisma.io/)
 
 ---
 
@@ -38,16 +68,6 @@ project01/
 ├── tsconfig.json
 └── README.md
 ```
-
----
-
-## 🛠️ Tech Stack
-
-- **Runtime**: [Node.js](https://nodejs.org/)
-- **Framework**: [Express.js](https://expressjs.com/)
-- **Language**: [TypeScript](https://www.typescriptlang.org/)
-- **Dev Runner**: [tsx](https://github.com/privatenumber/tsx) (Fast TypeScript execute & watch)
-- **HTTP Client**: [Axios](https://axios-http.com/)
 
 ---
 
