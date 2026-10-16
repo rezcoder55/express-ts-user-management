@@ -6,118 +6,161 @@ import { UserModel, type User } from "../models/user.model";
  */
 
 // GET /api/users (supports ?q=... and ?region=...)
-export const getAllUsers = (req: Request, res: Response): void => {
-  const search = (req.query.q || req.query.search) as string | undefined;
-  const region = req.query.region as string | undefined;
+export const getAllUsers = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const search = (req.query.q || req.query.search) as string | undefined;
+    const region = req.query.region as string | undefined;
 
-  const users = UserModel.findAll({
-    search,
-    region,
-  });
+    const users = await UserModel.findAll({
+      search,
+      region,
+    });
 
-  res.status(200).json({
-    success: true,
-    count: users.length,
-    data: users,
-  });
+    res.status(200).json({
+      success: true,
+      count: users.length,
+      data: users,
+    });
+  } catch (error: any) {
+    console.error("Error in getAllUsers:", error);
+    res.status(500).json({
+      success: false,
+      message: "Database query failed: " + (error?.message || "Internal server error"),
+    });
+  }
 };
 
 // GET /api/users/:id
-export const getUserById = (req: Request, res: Response): void => {
-  const { id } = req.params;
-  const user = UserModel.findById(Number(id));
+export const getUserById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const user = await UserModel.findById(Number(id));
 
-  if (!user) {
-    res.status(404).json({
-      success: false,
-      message: "User not found",
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: user,
     });
-    return;
+  } catch (error: any) {
+    console.error("Error in getUserById:", error);
+    res.status(500).json({
+      success: false,
+      message: "Database query failed: " + (error?.message || "Internal server error"),
+    });
   }
-
-  res.status(200).json({
-    success: true,
-    data: user,
-  });
 };
 
 // POST /api/users
-export const createUser = (req: Request, res: Response): void => {
-  const { firstName, lastName, region, userId } = req.body as Partial<User>;
+export const createUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { firstName, lastName, region, jobTitleName, emailAddress, phoneNumber } = req.body as Partial<User>;
 
-  if (!firstName || !lastName) {
-    res.status(400).json({
-      success: false,
-      message: "firstName and lastName are required",
+    if (!firstName || !lastName) {
+      res.status(400).json({
+        success: false,
+        message: "firstName and lastName are required",
+      });
+      return;
+    }
+
+    const newUser = await UserModel.create({
+      firstName,
+      lastName,
+      region: region || "USA",
+      jobTitleName,
+      emailAddress,
+      phoneNumber,
     });
-    return;
+
+    res.status(201).json({
+      success: true,
+      message: "User added successfully",
+      data: newUser,
+    });
+  } catch (error: any) {
+    console.error("Error in createUser:", error);
+    res.status(500).json({
+      success: false,
+      message: "Database insert failed: " + (error?.message || "Internal server error"),
+    });
   }
-
-  const newUser: User = {
-    userId: userId || Date.now(),
-    firstName,
-    lastName,
-    region: region || "USA",
-  };
-
-  UserModel.create(newUser);
-
-  res.status(201).json({
-    success: true,
-    message: "User added successfully",
-    data: UserModel.findAll(),
-  });
 };
 
 // PUT /api/users/:id
-export const updateUser = (req: Request, res: Response): void => {
-  const { id } = req.params;
-  const { firstName, lastName, region } = req.body as Partial<User>;
+export const updateUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { firstName, lastName, region, jobTitleName, emailAddress, phoneNumber } = req.body as Partial<User>;
 
-  if (!firstName || !lastName) {
-    res.status(400).json({
-      success: false,
-      message: "firstName and lastName are required",
+    if (!firstName || !lastName) {
+      res.status(400).json({
+        success: false,
+        message: "firstName and lastName are required",
+      });
+      return;
+    }
+
+    const updatedUser = await UserModel.update(Number(id), {
+      firstName,
+      lastName,
+      region,
+      jobTitleName,
+      emailAddress,
+      phoneNumber,
     });
-    return;
-  }
 
-  const updatedUser = UserModel.update(Number(id), {
-    firstName,
-    lastName,
-    region,
-  });
+    if (!updatedUser) {
+      res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+      return;
+    }
 
-  if (!updatedUser) {
-    res.status(404).json({
-      success: false,
-      message: "User not found",
+    res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      data: updatedUser,
     });
-    return;
+  } catch (error: any) {
+    console.error("Error in updateUser:", error);
+    res.status(500).json({
+      success: false,
+      message: "Database update failed: " + (error?.message || "Internal server error"),
+    });
   }
-
-  res.status(200).json({
-    success: true,
-    message: "User updated successfully",
-    data: updatedUser,
-  });
 };
 
 // DELETE /api/users/:id
-export const deleteUser = (req: Request, res: Response): void => {
-  const { id } = req.params;
-  const isDeleted = UserModel.delete(Number(id));
+export const deleteUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const isDeleted = await UserModel.delete(Number(id));
 
-  if (!isDeleted) {
-    res.status(404).json({
-      success: false,
-      message: "User not found",
+    if (!isDeleted) {
+      res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "User deleted successfully",
     });
-    return;
+  } catch (error: any) {
+    console.error("Error in deleteUser:", error);
+    res.status(500).json({
+      success: false,
+      message: "Database delete failed: " + (error?.message || "Internal server error"),
+    });
   }
-
-  res.status(200).json({
-    success: true,
-    message: "User deleted successfully",
-  });
 };

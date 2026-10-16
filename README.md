@@ -28,7 +28,7 @@ A full-stack User Management application built with **Node.js**, **Express**, **
 - [x] **TypeScript Integration**: Strong typing across models, controllers, and routes.
 - [x] **MVC Pattern Refactoring**: Decoupling business logic from routing.
 - [x] **Interactive Frontend**: Tabbed navigation, live search, and modal interactions.
-- [ ] **Database Integration with PostgreSQL**: Replacing in-memory mock storage with a persistent PostgreSQL database.
+- [x] **Database Integration with PostgreSQL**: Connected to `mydb2` using `pg` (node-postgres) with automatic table creation & seeding.
 - [ ] **Prisma ORM**: Schema definitions, database migrations, and type-safe database queries.
 - [ ] **Validation & Error Handling**: Adding schema validation (e.g. Zod or Joi) and centralized error handling middleware.
 
@@ -40,6 +40,8 @@ A full-stack User Management application built with **Node.js**, **Express**, **
 - **Runtime**: [Node.js](https://nodejs.org/)
 - **Framework**: [Express.js](https://expressjs.com/)
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Database**: [PostgreSQL](https://www.postgresql.org/)
+- **DB Driver**: [pg (node-postgres)](https://node-postgres.com/)
 - **Dev Runner**: [tsx](https://github.com/privatenumber/tsx) (Fast TypeScript execution with watch mode)
 - **HTTP Client**: [Axios](https://axios-http.com/)
 

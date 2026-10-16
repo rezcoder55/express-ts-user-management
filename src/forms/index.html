@@ -31,6 +31,53 @@
         border-radius: 12px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         overflow: hidden;
+        position: relative;
+      }
+
+      /* Global Request Progress Bar */
+      .global-progress-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: transparent;
+        overflow: hidden;
+        z-index: 100;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+      }
+
+      .global-progress-bar.active {
+        opacity: 1;
+      }
+
+      .global-progress-bar.active::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -50%;
+        width: 50%;
+        height: 100%;
+        background: linear-gradient(90deg, #2563eb, #60a5fa, #818cf8);
+        border-radius: 2px;
+        animation: progressSlide 1.2s infinite ease-in-out;
+      }
+
+      @keyframes progressSlide {
+        0% {
+          left: -40%;
+          width: 30%;
+        }
+        50% {
+          left: 25%;
+          width: 60%;
+        }
+        100% {
+          left: 100%;
+          width: 30%;
+        }
       }
 
       .header {
@@ -38,10 +85,41 @@
         text-align: center;
       }
 
+      .header-content {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
       .header h1 {
         font-size: 24px;
         font-weight: 700;
         color: #1e293b;
+      }
+
+      .network-badge {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        font-size: 12px;
+        font-weight: 500;
+        color: #2563eb;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 9999px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+      }
+
+      .network-badge.active {
+        opacity: 1;
       }
 
       /* Tabs Navigation */
@@ -142,12 +220,24 @@
         border: none;
         border-radius: 8px;
         cursor: pointer;
-        transition: background-color 0.2s;
+        transition: background-color 0.2s, opacity 0.2s;
         margin-top: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
       }
 
       .submit-btn:hover {
         background-color: #1d4ed8;
+      }
+
+      .submit-btn:disabled,
+      .modal-cancel-btn:disabled,
+      .refresh-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        pointer-events: none;
       }
 
       /* Alert Messages */
@@ -416,10 +506,20 @@
         font-size: 15px;
         font-weight: 600;
         padding: 13px;
-        border: none;
+        border: 1px solid #cbd5e1;
+        background-color: #f8fafc;
+        color: #475569;
         border-radius: 8px;
         cursor: pointer;
         margin-top: 10px;
+        transition: background-color 0.2s, opacity 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+      .modal-cancel-btn:hover {
+        background-color: #f1f5f9;
       }
       .form-actions {
         display: flex;
@@ -427,12 +527,98 @@
         justify-content: flex-end;
         margin-top: 10px;
       }
+
+      /* Modern Spinners */
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.35);
+        border-radius: 50%;
+        border-top-color: #ffffff;
+        animation: spin 0.65s linear infinite;
+        vertical-align: middle;
+        flex-shrink: 0;
+      }
+
+      .spinner.spinner-sm {
+        width: 12px;
+        height: 12px;
+        border-width: 2px;
+      }
+
+      .spinner.spinner-primary {
+        border-color: rgba(37, 99, 235, 0.2);
+        border-top-color: #2563eb;
+      }
+
+      .spinner.spinner-danger {
+        border-color: rgba(220, 38, 38, 0.25);
+        border-top-color: #dc2626;
+      }
+
+      .spinner.spinner-lg {
+        width: 38px;
+        height: 38px;
+        border-width: 3.5px;
+        border-color: #e2e8f0;
+        border-top-color: #2563eb;
+      }
+
+      /* Loading State in Users Grid */
+      .loading-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 48px 20px;
+        gap: 14px;
+        color: #64748b;
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      .loading-state p {
+        margin: 0;
+        animation: pulseText 1.4s ease-in-out infinite alternate;
+      }
+
+      @keyframes pulseText {
+        from {
+          opacity: 0.55;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .spin-icon {
+        animation: spin 0.75s linear infinite;
+      }
     </style>
   </head>
   <body>
     <div class="container">
+      <!-- Global Top Loading Bar -->
+      <div id="globalProgressBar" class="global-progress-bar"></div>
+
       <div class="header">
-        <h1>User Management Portal</h1>
+        <div class="header-content">
+          <h1>User Management Portal</h1>
+          <div id="networkBadge" class="network-badge">
+            <span class="spinner spinner-sm spinner-primary"></span>
+            <span>Requesting...</span>
+          </div>
+        </div>
       </div>
 
       <!-- Tab Buttons -->
@@ -481,7 +667,9 @@
             </select>
           </div>
 
-          <button type="submit" class="submit-btn">Add User</button>
+          <button type="submit" id="addUserSubmitBtn" class="submit-btn">
+            <span>Add User</span>
+          </button>
         </form>
       </div>
 
@@ -569,6 +757,47 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.20.0/axios.min.js"></script>
     <script>
+      // Global Request Tracker & Axios Interceptors
+      let activeRequests = 0;
+      const globalProgress = document.getElementById("globalProgressBar");
+      const networkBadge = document.getElementById("networkBadge");
+
+      function updateGlobalLoadingState() {
+        if (activeRequests > 0) {
+          globalProgress?.classList.add("active");
+          networkBadge?.classList.add("active");
+        } else {
+          globalProgress?.classList.remove("active");
+          networkBadge?.classList.remove("active");
+        }
+      }
+
+      axios.interceptors.request.use(
+        (config) => {
+          activeRequests++;
+          updateGlobalLoadingState();
+          return config;
+        },
+        (error) => {
+          activeRequests = Math.max(0, activeRequests - 1);
+          updateGlobalLoadingState();
+          return Promise.reject(error);
+        }
+      );
+
+      axios.interceptors.response.use(
+        (response) => {
+          activeRequests = Math.max(0, activeRequests - 1);
+          updateGlobalLoadingState();
+          return response;
+        },
+        (error) => {
+          activeRequests = Math.max(0, activeRequests - 1);
+          updateGlobalLoadingState();
+          return Promise.reject(error);
+        }
+      );
+
       // Tab Switching Logic
       const tabBtns = document.querySelectorAll(".tab-btn");
       const tabContents = document.querySelectorAll(".tab-content");
@@ -593,6 +822,7 @@
 
       // Form Handling
       const form = document.getElementById("addUserForm");
+      const addUserSubmitBtn = document.getElementById("addUserSubmitBtn") || form.querySelector(".submit-btn");
       const alertBox = document.getElementById("alertBox");
 
       function showAlert(msg, isSuccess = true) {
@@ -607,6 +837,11 @@
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
         const formData = new FormData(form);
+
+        if (addUserSubmitBtn) {
+          addUserSubmitBtn.disabled = true;
+          addUserSubmitBtn.innerHTML = `<span class="spinner"></span> <span>Adding User...</span>`;
+        }
 
         try {
           const response = await axios.post("/api/users", {
@@ -629,6 +864,11 @@
               "An error occurred while adding user",
             false
           );
+        } finally {
+          if (addUserSubmitBtn) {
+            addUserSubmitBtn.disabled = false;
+            addUserSubmitBtn.innerHTML = `<span>Add User</span>`;
+          }
         }
       });
 
@@ -650,7 +890,13 @@
           clearSearchBtn.style.display = query ? "block" : "none";
         }
 
-        usersGrid.innerHTML = `<div class="empty-state">Searching users...</div>`;
+        const isSearching = Boolean(query || (region && region !== "all"));
+        usersGrid.innerHTML = `
+          <div class="loading-state" style="grid-column: 1 / -1;">
+            <div class="spinner spinner-lg"></div>
+            <p>${isSearching ? "Searching users..." : "Loading users..."}</p>
+          </div>
+        `;
         try {
           const response = await axios.get("/api/users", {
             params: {
@@ -719,11 +965,21 @@
         fetchUsers();
       });
 
-      refreshBtn.addEventListener("click", () => {
+      refreshBtn.addEventListener("click", async () => {
+        const icon = refreshBtn.querySelector("svg");
+        if (icon) icon.classList.add("spin-icon");
+        refreshBtn.disabled = true;
+
         searchInput.value = "";
         regionFilter.value = "all";
         if (clearSearchBtn) clearSearchBtn.style.display = "none";
-        fetchUsers();
+
+        try {
+          await fetchUsers();
+        } finally {
+          if (icon) icon.classList.remove("spin-icon");
+          refreshBtn.disabled = false;
+        }
       });
 
       usersGrid.addEventListener("click", (e) => {
@@ -787,15 +1043,24 @@
                 </div>
                 <div class="form-actions">
                   <button id="cancelBtn" type="button" class="modal-cancel-btn">Cancel</button>
-                  <button type="submit" class="submit-btn">Save Changes</button>
+                  <button type="submit" id="saveEditBtn" class="submit-btn">Save Changes</button>
                 </div>
               </form>
             `;
 
             const editForm = document.getElementById("editUserForm");
+            const saveEditBtn = editForm?.querySelector("#saveEditBtn");
+            const cancelBtn = modal.querySelector("#cancelBtn");
+
             editForm.addEventListener("submit", async (e) => {
               e.preventDefault();
               const editFormData = new FormData(editForm);
+
+              if (saveEditBtn) {
+                saveEditBtn.disabled = true;
+                saveEditBtn.innerHTML = `<span class="spinner"></span> <span>Saving...</span>`;
+              }
+              if (cancelBtn) cancelBtn.disabled = true;
 
               try {
                 const response = await axios.put("/api/users/" + user.userId, {
@@ -821,10 +1086,15 @@
                     "An error occurred while updating user",
                   false
                 );
+              } finally {
+                if (saveEditBtn) {
+                  saveEditBtn.disabled = false;
+                  saveEditBtn.innerHTML = `Save Changes`;
+                }
+                if (cancelBtn) cancelBtn.disabled = false;
               }
             });
 
-            const cancelBtn = modal.querySelector("#cancelBtn");
             cancelBtn.addEventListener("click", () => {
               modal?.close();
             });
@@ -857,7 +1127,13 @@
             `;
 
             const deleteBtn = modal.querySelector("#deleteBtn");
+            const cancelDeleteBtn = modal.querySelector("#cancelBtn");
+
             deleteBtn.addEventListener("click", async () => {
+              deleteBtn.disabled = true;
+              deleteBtn.innerHTML = `<span class="spinner spinner-danger"></span> <span>Deleting...</span>`;
+              if (cancelDeleteBtn) cancelDeleteBtn.disabled = true;
+
               try {
                 const response = await axios.delete(
                   "/api/users/" + user.userId
@@ -879,16 +1155,19 @@
                     "An error occurred while deleting user",
                   false
                 );
+              } finally {
+                deleteBtn.disabled = false;
+                deleteBtn.innerHTML = `Delete`;
+                if (cancelDeleteBtn) cancelDeleteBtn.disabled = false;
               }
+            });
+
+            cancelDeleteBtn.addEventListener("click", () => {
+              modal?.close();
             });
           }
 
           console.log("Delete clicked for user:", user);
-
-          const cancelBtn = modal.querySelector("#cancelBtn");
-          cancelBtn.addEventListener("click", () => {
-            modal?.close();
-          });
         }
       });
     </script>
