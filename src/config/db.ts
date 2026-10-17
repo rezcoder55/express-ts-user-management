@@ -76,3 +76,19 @@ export async function initDb(): Promise<void> {
     );
   }
 }
+
+let dbInitPromise: Promise<void> | null = null;
+
+/**
+ * Ensures the database schema and initial data are ready.
+ * Safe for serverless environments (e.g. Vercel) where app.listen is not called.
+ */
+export async function ensureDb(): Promise<void> {
+  if (!dbInitPromise) {
+    dbInitPromise = initDb().catch((err) => {
+      dbInitPromise = null;
+      throw err;
+    });
+  }
+  return dbInitPromise;
+}
