@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+// إذا وجدنا DATABASE_URL (عند الرفع على Vercel أو Neon)، نستخدمه مباشرة
+// وإذا لم يوجد (محلياً على جهازك)، نستخدم المتغيرات المنفصلة
 export const pool = new Pool(
   process.env.DATABASE_URL
     ? {
@@ -22,16 +24,14 @@ export const pool = new Pool(
 
 /**
  * Initializes the database:
- * 1. Verifies the connection to PostgreSQL (mydb2).
+ * 1. Verifies the connection to PostgreSQL.
  * 2. Creates the 'users' table if it does not already exist.
  * 3. Seeds initial demo records if the table is empty.
  */
 export async function initDb(): Promise<void> {
   try {
     const client = await pool.connect();
-    console.log(
-      `✅ [Database] Connected successfully to PostgreSQL database: "${process.env.DB_NAME || "mydb2"}"`
-    );
+    console.log(`✅ [Database] Connected successfully to PostgreSQL database!`);
 
     const createTableQuery = `
       CREATE TABLE IF NOT EXISTS users (
@@ -72,7 +72,7 @@ export async function initDb(): Promise<void> {
   } catch (error: any) {
     console.error("❌ [Database] Connection error:", error.message);
     console.warn(
-      "⚠️  Please check your PostgreSQL credentials in the .env file (DB_PASSWORD, DB_USER, DB_NAME)."
+      "⚠️ Please check your database connection string or credentials."
     );
   }
 }
