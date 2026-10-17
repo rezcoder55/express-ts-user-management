@@ -3,13 +3,22 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-export const pool = new Pool({
-  host: process.env.DB_HOST || "localhost",
-  port: Number(process.env.DB_PORT) || 5432,
-  user: process.env.DB_USER || "postgres",
-  password: process.env.DB_PASSWORD || "",
-  database: process.env.DB_NAME || "mydb2",
-});
+export const pool = new Pool(
+  process.env.DATABASE_URL
+    ? {
+        connectionString: process.env.DATABASE_URL,
+        ssl: {
+          rejectUnauthorized: false, // مخصص للاتصال الآمن بـ Neon
+        },
+      }
+    : {
+        host: process.env.DB_HOST || "localhost",
+        port: Number(process.env.DB_PORT) || 5432,
+        user: process.env.DB_USER || "postgres",
+        password: process.env.DB_PASSWORD || "",
+        database: process.env.DB_NAME || "mydb2",
+      }
+);
 
 /**
  * Initializes the database:
@@ -20,7 +29,9 @@ export const pool = new Pool({
 export async function initDb(): Promise<void> {
   try {
     const client = await pool.connect();
-    console.log(`✅ [Database] Connected successfully to PostgreSQL database: "${process.env.DB_NAME || "mydb2"}"`);
+    console.log(
+      `✅ [Database] Connected successfully to PostgreSQL database: "${process.env.DB_NAME || "mydb2"}"`
+    );
 
     const createTableQuery = `
       CREATE TABLE IF NOT EXISTS users (
@@ -51,13 +62,17 @@ export async function initDb(): Promise<void> {
           ('Tom', 'Hanks', 'USA', 'Program Directory', 'Tom Hanks', 'E3', '408-2222222', 'tomanks@gmail.com');
       `;
       await client.query(seedQuery);
-      console.log("🌱 [Database] Seeded initial sample users into 'users' table.");
+      console.log(
+        "🌱 [Database] Seeded initial sample users into 'users' table."
+      );
     }
 
     client.release();
     console.log("🚀 [Database] 'users' table is ready.");
   } catch (error: any) {
     console.error("❌ [Database] Connection error:", error.message);
-    console.warn("⚠️  Please check your PostgreSQL credentials in the .env file (DB_PASSWORD, DB_USER, DB_NAME).");
+    console.warn(
+      "⚠️  Please check your PostgreSQL credentials in the .env file (DB_PASSWORD, DB_USER, DB_NAME)."
+    );
   }
 }
