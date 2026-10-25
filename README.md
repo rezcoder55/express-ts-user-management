@@ -1,15 +1,16 @@
-# User Management System (Express + TypeScript + MVC)
+# User Management System (Express + TypeScript + MVC + Prisma)
 
-A full-stack User Management application built with **Node.js**, **Express**, **TypeScript**, and the **MVC (Model-View-Controller)** pattern.
+A full-stack User Management application built with **Node.js**, **Express**, **TypeScript**, **Prisma ORM**, and the **MVC (Model-View-Controller)** pattern.
 
 > 🎯 **Project Purpose**:  
-> This project was developed as a hands-on learning lab to practice and master core backend development concepts with **Node.js & Express**, implement clean architecture (**MVC** and **RESTful API design**), and prepare for integrating relational databases with **PostgreSQL** and **Prisma ORM**.
+> This project was developed as a hands-on learning lab to practice and master core backend development concepts with **Node.js & Express**, implement clean architecture (**MVC** and **RESTful API design**), and integrate relational databases with **PostgreSQL** and **Prisma ORM**.
 
 ---
 
 ## 🚀 Current Features
 
 - **MVC Architecture**: Clean separation of concerns between Models, Controllers, and Routes.
+- **Prisma ORM**: Type-safe database access with auto-generated client, schema migrations, and zero raw SQL.
 - **RESTful API**: Standardized HTTP endpoints for user CRUD operations (`GET`, `POST`, `PUT`, `DELETE`).
 - **Live Search & Filter**:
   - Real-time debounced search by name, email, or region.
@@ -29,25 +30,19 @@ A full-stack User Management application built with **Node.js**, **Express**, **
 - [x] **MVC Pattern Refactoring**: Decoupling business logic from routing.
 - [x] **Interactive Frontend**: Tabbed navigation, live search, and modal interactions.
 - [x] **Database Integration with PostgreSQL**: Connected to `mydb2` using `pg` (node-postgres) with automatic table creation & seeding.
-- [ ] **Prisma ORM**: Schema definitions, database migrations, and type-safe database queries.
+- [x] **Prisma ORM**: Schema definitions, database migrations, and type-safe database queries.
 - [ ] **Validation & Error Handling**: Adding schema validation (e.g. Zod or Joi) and centralized error handling middleware.
 
 ---
 
 ## 🛠️ Tech Stack
 
-### Current
 - **Runtime**: [Node.js](https://nodejs.org/)
 - **Framework**: [Express.js](https://expressjs.com/)
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
 - **Database**: [PostgreSQL](https://www.postgresql.org/)
-- **DB Driver**: [pg (node-postgres)](https://node-postgres.com/)
+- **ORM**: [Prisma](https://www.prisma.io/) (type-safe database client with schema migrations)
 - **Dev Runner**: [tsx](https://github.com/privatenumber/tsx) (Fast TypeScript execution with watch mode)
-- **HTTP Client**: [Axios](https://axios-http.com/)
-
-### Planned / In Roadmap
-- **Database**: [PostgreSQL](https://www.postgresql.org/)
-- **ORM**: [Prisma](https://www.prisma.io/)
 
 ---
 
@@ -55,17 +50,24 @@ A full-stack User Management application built with **Node.js**, **Express**, **
 
 ```
 project01/
+├── prisma/
+│   └── schema.prisma           # Prisma schema (models, datasource, generator)
+├── prisma.config.ts            # Prisma config (engine, migrations path)
 ├── src/
+│   ├── config/
+│   │   ├── db.ts               # Legacy pg pool (kept for reference)
+│   │   └── prisma.ts           # Prisma Client singleton instance
 │   ├── controllers/
 │   │   └── user.controller.ts  # Handles HTTP request validation and responses
 │   ├── models/
-│   │   └── user.model.ts       # Data schema & business/storage access methods
+│   │   └── user.model.ts       # Prisma-based data access methods (CRUD)
 │   ├── routes/
 │   │   └── users.ts            # RESTful route definitions mapped to controllers
 │   ├── forms/
 │   │   └── index.html          # Frontend presentation view (static client)
 │   ├── my-data.ts              # Initial mock data and interfaces
 │   └── index.ts                # Application entry point and server setup
+├── .env                        # Environment variables (DATABASE_URL)
 ├── package.json
 ├── tsconfig.json
 └── README.md
@@ -92,6 +94,7 @@ Base URL: `http://localhost:3000`
 ### 1. Prerequisites
 - **Node.js** (v18 or higher recommended)
 - **npm**
+- **PostgreSQL** (running locally or a cloud instance like Neon)
 
 ### 2. Installation
 Clone the repository and install dependencies:
@@ -99,14 +102,26 @@ Clone the repository and install dependencies:
 npm install
 ```
 
-### 3. Development Mode
+### 3. Database Setup with Prisma
+Generate the Prisma Client and apply migrations:
+```bash
+npm run prisma:generate
+npm run prisma:migrate
+```
+
+To explore your data visually:
+```bash
+npm run prisma:studio
+```
+
+### 4. Development Mode
 Start the development server with live reload:
 ```bash
 npm run dev
 ```
 The server will start at: **`http://localhost:3000`**
 
-### 4. Production Build
+### 5. Production Build
 Compile TypeScript to JavaScript:
 ```bash
 npm run build

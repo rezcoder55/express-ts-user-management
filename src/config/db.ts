@@ -5,13 +5,16 @@ dotenv.config();
 
 // إذا وجدنا DATABASE_URL (عند الرفع على Vercel أو Neon)، نستخدمه مباشرة
 // وإذا لم يوجد (محلياً على جهازك)، نستخدم المتغيرات المنفصلة
+const isLocalDb =
+  process.env.DATABASE_URL?.includes("localhost") ||
+  process.env.DATABASE_URL?.includes("127.0.0.1");
+
 export const pool = new Pool(
   process.env.DATABASE_URL
     ? {
         connectionString: process.env.DATABASE_URL,
-        ssl: {
-          rejectUnauthorized: false, // مخصص للاتصال الآمن بـ Neon
-        },
+        // SSL مطلوب فقط للاتصال بقواعد بيانات سحابية مثل Neon، وليس محلياً
+        ...(isLocalDb ? {} : { ssl: { rejectUnauthorized: false } }),
       }
     : {
         host: process.env.DB_HOST || "localhost",

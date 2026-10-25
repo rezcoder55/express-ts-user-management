@@ -1,16 +1,8 @@
-import { pool } from "../config/db";
+import { prisma } from "../config/prisma";
+import type { User as PrismaUser } from "@prisma/client";
 
-export interface User {
-  userId?: number;
-  jobTitleName?: string;
-  firstName: string;
-  lastName: string;
-  preferredFullName?: string;
-  employeeCode?: string;
-  region: string;
-  phoneNumber?: string;
-  emailAddress?: string;
-}
+// Re-export the Prisma-generated type so the rest of the app keeps working
+export type User = PrismaUser;
 
 export interface UserFilterOptions {
   search?: string;
@@ -19,171 +11,96 @@ export interface UserFilterOptions {
 
 export const UserModel = {
   findAll: async (filters?: UserFilterOptions): Promise<User[]> => {
-    let query = `
-      SELECT 
-        user_id AS "userId",
-        job_title_name AS "jobTitleName",
-        first_name AS "firstName",
-        last_name AS "lastName",
-        preferred_full_name AS "preferredFullName",
-        employee_code AS "employeeCode",
-        region,
-        phone_number AS "phoneNumber",
-        email_address AS "emailAddress"
-      FROM users
-      WHERE 1=1
-    `;
-    const values: any[] = [];
-    let paramIndex = 1;
+    const where: any = {};
 
     if (filters?.region && filters.region !== "all") {
-      query += ` AND LOWER(region) = LOWER($${paramIndex++})`;
-      values.push(filters.region.trim());
+      where.region = {
+        equals: filters.region.trim(),
+        mode: "insensitive",
+      };
     }
 
     if (filters?.search && filters.search.trim() !== "") {
-      const q = `%${filters.search.trim().toLowerCase()}%`;
-      query += ` AND (
-        LOWER(first_name) LIKE $${paramIndex} OR
-        LOWER(last_name) LIKE $${paramIndex} OR
-        LOWER(CONCAT(first_name, ' ', last_name)) LIKE $${paramIndex} OR
-        LOWER(COALESCE(email_address, '')) LIKE $${paramIndex} OR
-        LOWER(region) LIKE $${paramIndex} OR
-        LOWER(COALESCE(job_title_name, '')) LIKE $${paramIndex}
-      )`;
-      values.push(q);
-      paramIndex++;
+      const q = filters.search.trim();
+      where.OR = [
+        { firstName: { contains: q, mode: "insensitive" } },
+        { lastName: { contains: q, mode: "insensitive" } },
+        { emailAddress: { contains: q, mode: "insensitive" } },
+        { region: { contains: q, mode: "insensitive" } },
+        { jobTitleName: { contains: q, mode: "insensitive" } },
+      ];
     }
 
-    query += ` ORDER BY user_id ASC`;
-
-    const res = await pool.query(query, values);
-    return res.rows;
+    return prisma.user.findMany({
+      where,
+      orderBy: { userId: "asc" },
+    });
   },
 
   findById: async (id: number): Promise<User | null> => {
-    const res = await pool.query(
-      `SELECT 
-        user_id AS "userId",
-        job_title_name AS "jobTitleName",
-        first_name AS "firstName",
-        last_name AS "lastName",
-        preferred_full_name AS "preferredFullName",
-        employee_code AS "employeeCode",
-        region,
-        phone_number AS "phoneNumber",
-        email_address AS "emailAddress"
-      FROM users
-      WHERE user_id = $1`,
-      [id]
-    );
-
-    return res.rows[0] || null;
+    return prisma.user.findUnique({
+      where: { userId: id },
+    });
   },
 
   create: async (userData: Partial<User>): Promise<User> => {
-    const res = await pool.query(
-      `INSERT INTO users (
-        first_name,
-        last_name,
-        region,
-        job_title_name,
-        preferred_full_name,
-        employee_code,
-        phone_number,
-        email_address
-      )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      RETURNING 
-        user_id AS "userId",
-        job_title_name AS "jobTitleName",
-        first_name AS "firstName",
-        last_name AS "lastName",
-        preferred_full_name AS "preferredFullName",
-        employee_code AS "employeeCode",
-        region,
-        phone_number AS "phoneNumber",
-        email_address AS "emailAddress"`,
-      [
-        userData.firstName,
-        userData.lastName,
-        userData.region || "USA",
-        userData.jobTitleName || null,
-        userData.preferredFullName || null,
-        userData.employeeCode || null,
-        userData.phoneNumber || null,
-        userData.emailAddress || null,
-      ]
-    );
-
-    return res.rows[0];
+    return prisma.user.create({
+      data: {
+        firstName: userData.firstName!,
+        lastName: userData.lastName!,
+        region: userData.region || "USA",
+        jobTitleName: userData.jobTitleName || null,
+        preferredFullName: userData.preferredFullName || null,
+        employeeCode: userData.employeeCode || null,
+        phoneNumber: userData.phoneNumber || null,
+        emailAddress: userData.emailAddress || null,
+      },
+    });
   },
 
   update: async (id: number, updateData: Partial<User>): Promise<User | null> => {
-    const fields: string[] = [];
-    const values: any[] = [];
-    let paramIndex = 1;
+    // Build a data object containing only the fields that were provided
+    const data: Record<string, any> = {};
 
-    if (updateData.firstName !== undefined) {
-      fields.push(`first_name = $${paramIndex++}`);
-      values.push(updateData.firstName);
-    }
-    if (updateData.lastName !== undefined) {
-      fields.push(`last_name = $${paramIndex++}`);
-      values.push(updateData.lastName);
-    }
-    if (updateData.region !== undefined) {
-      fields.push(`region = $${paramIndex++}`);
-      values.push(updateData.region);
-    }
-    if (updateData.jobTitleName !== undefined) {
-      fields.push(`job_title_name = $${paramIndex++}`);
-      values.push(updateData.jobTitleName);
-    }
-    if (updateData.preferredFullName !== undefined) {
-      fields.push(`preferred_full_name = $${paramIndex++}`);
-      values.push(updateData.preferredFullName);
-    }
-    if (updateData.emailAddress !== undefined) {
-      fields.push(`email_address = $${paramIndex++}`);
-      values.push(updateData.emailAddress);
-    }
-    if (updateData.phoneNumber !== undefined) {
-      fields.push(`phone_number = $${paramIndex++}`);
-      values.push(updateData.phoneNumber);
-    }
-    if (updateData.employeeCode !== undefined) {
-      fields.push(`employee_code = $${paramIndex++}`);
-      values.push(updateData.employeeCode);
+    if (updateData.firstName !== undefined) data.firstName = updateData.firstName;
+    if (updateData.lastName !== undefined) data.lastName = updateData.lastName;
+    if (updateData.region !== undefined) data.region = updateData.region;
+    if (updateData.jobTitleName !== undefined) data.jobTitleName = updateData.jobTitleName;
+    if (updateData.preferredFullName !== undefined) data.preferredFullName = updateData.preferredFullName;
+    if (updateData.emailAddress !== undefined) data.emailAddress = updateData.emailAddress;
+    if (updateData.phoneNumber !== undefined) data.phoneNumber = updateData.phoneNumber;
+    if (updateData.employeeCode !== undefined) data.employeeCode = updateData.employeeCode;
+
+    if (Object.keys(data).length === 0) {
+      return UserModel.findById(id);
     }
 
-    if (fields.length === 0) {
-      return await UserModel.findById(id);
+    try {
+      return await prisma.user.update({
+        where: { userId: id },
+        data,
+      });
+    } catch (error: any) {
+      // Prisma throws P2025 when the record to update is not found
+      if (error.code === "P2025") {
+        return null;
+      }
+      throw error;
     }
-
-    values.push(id);
-    const res = await pool.query(
-      `UPDATE users 
-       SET ${fields.join(", ")} 
-       WHERE user_id = $${paramIndex}
-       RETURNING 
-        user_id AS "userId",
-        job_title_name AS "jobTitleName",
-        first_name AS "firstName",
-        last_name AS "lastName",
-        preferred_full_name AS "preferredFullName",
-        employee_code AS "employeeCode",
-        region,
-        phone_number AS "phoneNumber",
-        email_address AS "emailAddress"`,
-      values
-    );
-
-    return res.rows[0] || null;
   },
 
   delete: async (id: number): Promise<boolean> => {
-    const res = await pool.query(`DELETE FROM users WHERE user_id = $1`, [id]);
-    return (res.rowCount ?? 0) > 0;
+    try {
+      await prisma.user.delete({
+        where: { userId: id },
+      });
+      return true;
+    } catch (error: any) {
+      // Prisma throws P2025 when the record to delete is not found
+      if (error.code === "P2025") {
+        return false;
+      }
+      throw error;
+    }
   },
 };

@@ -5,7 +5,7 @@ import express from "express";
 import path from "path";
 import fs from "fs";
 import userRouter from "./routes/users";
-import { initDb, ensureDb } from "./config/db";
+import { prisma } from "./config/prisma";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,16 +14,6 @@ const PORT = process.env.PORT || 3000;
 const formsPath = fs.existsSync(path.join(process.cwd(), "src", "forms"))
   ? path.join(process.cwd(), "src", "forms")
   : path.join(__dirname, "forms");
-
-// Serverless DB initialization middleware (ensures Neon PostgreSQL table exists on Vercel)
-app.use(async (req, res, next) => {
-  try {
-    await ensureDb();
-  } catch (err) {
-    console.error("Database initialization check failed:", err);
-  }
-  next();
-});
 
 // Middleware
 app.use(express.urlencoded({ extended: false }));
@@ -73,7 +63,13 @@ app.use("/api/users", userRouter);
 // Start Server & Connect to Database (Local development)
 app.listen(PORT, async () => {
   console.log(`🚀 Server is running at http://localhost:${PORT}`);
-  await initDb();
+  // Verify Prisma can connect to the database
+  try {
+    await prisma.$connect();
+    console.log("✅ [Database] Connected successfully via Prisma!");
+  } catch (error: any) {
+    console.error("❌ [Database] Prisma connection error:", error.message);
+  }
 });
 
 export default app;
