@@ -60,16 +60,18 @@ app.get("/", (req, res) => {
 
 app.use("/api/users", userRouter);
 
-// Start Server & Connect to Database (Local development)
-app.listen(PORT, async () => {
-  console.log(`🚀 Server is running at http://localhost:${PORT}`);
-  // Verify Prisma can connect to the database
-  try {
-    await prisma.$connect();
-    console.log("✅ [Database] Connected successfully via Prisma!");
-  } catch (error: any) {
-    console.error("❌ [Database] Prisma connection error:", error.message);
-  }
-});
+// Start Server & Connect to Database (Local development only)
+if (!process.env.VERCEL) {
+  app.listen(PORT, async () => {
+    console.log(`🚀 Server is running at http://localhost:${PORT}`);
+    // Verify Prisma can connect to the database
+    try {
+      await prisma.$connect();
+      console.log("✅ [Database] Connected successfully via Prisma!");
+    } catch (error: any) {
+      console.error("❌ [Database] Prisma connection error:", error.message);
+    }
+  });
+}
 
 export default app;
